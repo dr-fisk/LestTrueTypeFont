@@ -6,12 +6,12 @@
 #include <map>
 
 #include "lestTtfData.h"
-#include "cmap.h"
+#include "ttfTable.h"
 
 class LestTrueType
 {
     public:
-        LestTrueType() : mBufferOffset(0) {}
+        LestTrueType();
         ~LestTrueType(){}
         int8_t read(std::string& rTtfPath);
     private:
@@ -20,6 +20,7 @@ class LestTrueType
         int8_t readTableDirectory(const std::vector<uint8_t>& crBuffer);
         int8_t copyTableBitMask(const std::string& crTag, uint16_t& rBitMask);
         std::shared_ptr<TrueTypeTable> tableFactory(const std::string& crTag);
+        std::shared_ptr<TrueTypeTable> processRemainingTables(const std::string& crTag);
 
         FontDirectory mFontDirectory;
         uint64_t mBufferOffset;

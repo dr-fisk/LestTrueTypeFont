@@ -29,5 +29,36 @@ uint64_t lesthtonll(uint64_t val)
     return finalResult | result2;
 }
 
-// 01 02 03 04 05 06 07 08
-// 08 07 06 05 04 03 02 01
+uint16_t read2BytesPtr(uint8_t* &rpPtr)
+{
+    uint16_t result = *rpPtr;
+    result <<= BYTE_SIZE;
+    rpPtr ++;
+    result |= (*rpPtr & 0x00ff );
+    rpPtr ++;
+    return result;
+}
+
+uint32_t read4BytesPtr(uint8_t* &rpPtr)
+{
+    uint32_t result = *rpPtr;
+    result <<= (WORD_SIZE + BYTE_SIZE);
+    const uint32_t hex_val = 0x000000ff;
+    rpPtr ++;
+    result |= (*rpPtr & hex_val) << WORD_SIZE;
+    rpPtr ++;
+    result |= (*rpPtr & hex_val) << BYTE_SIZE;
+    rpPtr ++;
+    result |= (*rpPtr & hex_val);
+    rpPtr ++;
+    return result;
+}
+
+uint64_t read8BytesPtr(uint8_t* &rpPtr)
+{
+    uint32_t result1 = read4BytesPtr(rpPtr);
+    uint32_t result2 = read4BytesPtr(rpPtr);
+    uint64_t finalResult = result2;
+    finalResult <<= WORD_SIZE + WORD_SIZE;
+    return (finalResult | result1);
+}

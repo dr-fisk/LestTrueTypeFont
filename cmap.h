@@ -44,10 +44,10 @@ class Cmap : public TrueTypeTable
     public:
         Cmap();
         ~Cmap();
-        void readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset);
+        void readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
+        uint16_t getGlyphIndex(const uint16_t cCodePoint);
     private:
         void readFormat4(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset);
-        uint16_t getGlyphIndex(const uint16_t cCodePoint);
 
         CmapHeader mCmapHeader;
         Format4 mFormat;

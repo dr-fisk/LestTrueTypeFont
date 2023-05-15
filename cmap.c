@@ -1,8 +1,4 @@
 #include "cmap.h"
-#include "endianGeneral.h"
-
-#include <cstring>
-#include <iostream>
 
 enum FormatType
 {
@@ -14,13 +10,31 @@ enum FormatType
 
 Cmap::Cmap()
 {
+    mCmapHeader.version = 0;
+    mCmapHeader.numTables = 0;
+
+    mFormat.format = 0;
+    mFormat.length = 0;
+    mFormat.language = 0;
+    mFormat.segCountX2 = 0;
+    mFormat.searchRange = 0;
+    mFormat.entrySelectory = 0;
+    mFormat.rangeShift = 0;
+    mFormat.reservedPad = 0;
 }
 
 Cmap::~Cmap()
 {
 }
 
-void Cmap::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset)
+/* Function:    readTable
+   Description: Reads in the data from the ttf buffer and begins constructing a Cmap Table
+   Parameters:  std::vector<uint8_t> - ttf buffer data
+                uint32_t             - Offset from the start of file where Cmap data starts
+                uint32_t             - Length of table not used for all cases only when padding is introduced to structs
+   Returns:     None
+ */
+void Cmap::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes)
 {
     memcpy((void *)&mCmapHeader, crBuffer.data() + cOffset, CMAP_HEADER_SIZE);
 
@@ -41,6 +55,8 @@ void Cmap::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffse
         curr_cmap.subTableOffset = lesthtonl(curr_cmap.subTableOffset);
         std::cout << curr_cmap.platformID << "\t" << curr_cmap.encodingID << "\t" << curr_cmap.subTableOffset << std::endl;
 
+        // Currently only unicode will be implemented as it's widely supported over multiple OS
+        // TODO: Add MAC and Windows format support
         if (FORMAT_UNICODE == curr_cmap.platformID)
         {
             readFormat4(crBuffer, cOffset + curr_cmap.subTableOffset);
@@ -48,6 +64,13 @@ void Cmap::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffse
     }
 }
 
+/* Function:    readFormat4
+   Description: Reads in the data from the ttf buffer and begins constructing a the Format4 structure
+                Format4 is the structure used for unicode
+   Parameters:  std::vector<uint8_t> - ttf buffer data
+                uint32_t             - Offset from the start of Cmap data where Format4 data starts
+   Returns:     None
+ */
 void Cmap::readFormat4(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset)
 {
     uint32_t curr_offset = cOffset;
@@ -118,6 +141,11 @@ void Cmap::readFormat4(const std::vector<uint8_t>& crBuffer, const uint32_t cOff
     }
 }
 
+/* Function:    getGlyphIndex
+   Description: Calculates the index and grabs the value in the glyphIDArray
+   Parameters:  uint16_t - The two byte character code to find
+   Returns:     uint16_t - The index for the character in the glyphIDArray
+ */
 uint16_t Cmap::getGlyphIndex(const uint16_t cCodePoint)
 {
     int32_t glyph_index = -1;
