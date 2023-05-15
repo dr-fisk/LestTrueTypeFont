@@ -12,6 +12,7 @@
 #include "maxp.h"
 #include "loca.h"
 #include "head.h"
+#include "name.h"
 
 enum TTFRequiredTablesBitMask
 {
@@ -313,7 +314,7 @@ std::shared_ptr<TrueTypeTable> LestTrueType::tableFactory(const std::string& crT
         case TABLE_MAXP:
             return std::make_shared<Maxp>(Maxp());
         case TABLE_NAME:
-            return nullptr;
+            return std::make_shared<Name>(Name());
         case TABLE_POST:
             return nullptr;
         case TABLE_OS2:
