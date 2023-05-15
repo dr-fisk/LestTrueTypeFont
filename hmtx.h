@@ -5,7 +5,10 @@
 
 struct LongHorMetric
 {
+    // Paired advance width and left side bearing values for each glyph. Records are indexed by glyph ID.
     uint16_t advanceWidth;
+
+    // Left side bearings for glyph IDs greater than or equal to numberOfHMetrics.
     int16_t  leftSideBearing;
 };
 
