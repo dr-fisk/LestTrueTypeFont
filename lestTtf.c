@@ -13,6 +13,7 @@
 #include "loca.h"
 #include "head.h"
 #include "name.h"
+#include "post.h"
 
 enum TTFRequiredTablesBitMask
 {
@@ -316,7 +317,7 @@ std::shared_ptr<TrueTypeTable> LestTrueType::tableFactory(const std::string& crT
         case TABLE_NAME:
             return std::make_shared<Name>(Name());
         case TABLE_POST:
-            return nullptr;
+            return std::make_shared<Post>(Post());
         case TABLE_OS2:
             return nullptr;
         case TABLE_CVT:

@@ -1,6 +1,6 @@
 all : main
 
-objs = lestTtf.o endianGeneral.o cmap.o head.o glyf.o loca.o maxp.o hhea.o hmtx.o name.o
+objs = lestTtf.o endianGeneral.o cmap.o head.o glyf.o loca.o maxp.o hhea.o hmtx.o name.o post.o
 CC = g++
 
 ifneq ($(DEBUG), 1)
