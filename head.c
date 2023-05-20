@@ -5,12 +5,12 @@ HeadTable::HeadTable()
     memset(&mHeadHeader, 0, sizeof(mHeadHeader));
 }
 
-void HeadTable::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes)
+int8_t HeadTable::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes)
 {
     if (0 == cNumBytes)
     {
         std::cout << "Error: Cannot copy 0 bytes." << std::endl;
-        return;
+        return -1;
     }
 
     uint8_t *temp_ptr = (uint8_t *)crBuffer.data();
@@ -34,7 +34,16 @@ void HeadTable::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t c
     mHeadHeader.indexToLocFormat = read2BytesPtr(temp_ptr);
     mHeadHeader.glyphDataFormat = read2BytesPtr(temp_ptr);
 
-    std::cout << " Major Version: " << mHeadHeader.majorVersion << " Minor version: " << mHeadHeader.minorVersion << " Font Revision: " << mHeadHeader.fontRevision << " Checksum Adjustment: " << mHeadHeader.checksumAdjustment << " Magic Number: "
-    << mHeadHeader.magicNumber << " Flags: " << mHeadHeader.flags << " Units Per Em: " << mHeadHeader.unitsPerEm << " Created: " << mHeadHeader.created << " Modified: " << mHeadHeader.modified << " xMin: " << mHeadHeader.xMin << " xMax: " << mHeadHeader.xMax << " yMin: " << mHeadHeader.yMin << " yMax: "
-    << mHeadHeader.yMax << " macStyle: " << mHeadHeader.macStyle << " lowestRecPPEM: " << mHeadHeader.lowestRecPPEM << " FontDirectionHint: " << mHeadHeader.fontDirectionHint << " IndexToLocFormat: " << mHeadHeader.indexToLocFormat << " GlyphDataFormat: " << mHeadHeader.glyphDataFormat << std::endl; 
+    #ifdef DEBUG
+        std::cout << " Major Version: " << mHeadHeader.majorVersion << " Minor version: " << mHeadHeader.minorVersion << " Font Revision: " << mHeadHeader.fontRevision << " Checksum Adjustment: " << mHeadHeader.checksumAdjustment << " Magic Number: "
+        << mHeadHeader.magicNumber << " Flags: " << mHeadHeader.flags << " Units Per Em: " << mHeadHeader.unitsPerEm << " Created: " << mHeadHeader.created << " Modified: " << mHeadHeader.modified << " xMin: " << mHeadHeader.xMin << " xMax: " << mHeadHeader.xMax << " yMin: " << mHeadHeader.yMin << " yMax: "
+        << mHeadHeader.yMax << " macStyle: " << mHeadHeader.macStyle << " lowestRecPPEM: " << mHeadHeader.lowestRecPPEM << " FontDirectionHint: " << mHeadHeader.fontDirectionHint << " IndexToLocFormat: " << mHeadHeader.indexToLocFormat << " GlyphDataFormat: " << mHeadHeader.glyphDataFormat << std::endl; 
+    #endif
+
+    return 1;
+}
+
+int16_t HeadTable::getLocaFormat() const
+{
+    return mHeadHeader.indexToLocFormat;
 }

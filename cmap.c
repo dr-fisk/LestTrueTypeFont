@@ -34,26 +34,48 @@ Cmap::~Cmap()
                 uint32_t             - Length of table not used for all cases only when padding is introduced to structs
    Returns:     None
  */
-void Cmap::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes)
+int8_t Cmap::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes)
 {
+    if (0 >= cNumBytes)
+    {
+        std::cout << "Error: cnumbytes less than 0." << std::endl;
+        return -1;
+    }
+
     memcpy((void *)&mCmapHeader, crBuffer.data() + cOffset, CMAP_HEADER_SIZE);
 
     mCmapHeader.version = lesthtons(mCmapHeader.version);
     mCmapHeader.numTables = lesthtons(mCmapHeader.numTables);
-    std::cout << "Cmap version: " << mCmapHeader.version << std::endl;
-    std::cout << "Cmap numTables: " << mCmapHeader.numTables << std::endl;
+
+    #ifdef DEBUG
+        std::cout << "Cmap version: " << mCmapHeader.version << std::endl;
+        std::cout << "Cmap numTables: " << mCmapHeader.numTables << std::endl;
+    #endif
+
+    if (0 >= mCmapHeader.numTables)
+    {
+        std::cout << "Error: Num Tables read from CMAP is: " << mCmapHeader.numTables << std::endl;
+        return -1;
+    }
+    
     mCmapHeader.encodingRecords.resize(mCmapHeader.numTables);
 
     memcpy(mCmapHeader.encodingRecords.data(), crBuffer.data() + cOffset + CMAP_HEADER_SIZE,
            sizeof(EncodingRecord) * mCmapHeader.encodingRecords.size());
 
-    std::cout << "pId\tpsId\toffset\t" << std::endl;
+    #ifdef DEBUG
+        std::cout << "pId\tpsId\toffset\t" << std::endl;
+    #endif
+
     for (auto& curr_cmap : mCmapHeader.encodingRecords)
     {
         curr_cmap.platformID = lesthtons(curr_cmap.platformID);
         curr_cmap.encodingID = lesthtons(curr_cmap.encodingID);
         curr_cmap.subTableOffset = lesthtonl(curr_cmap.subTableOffset);
-        std::cout << curr_cmap.platformID << "\t" << curr_cmap.encodingID << "\t" << curr_cmap.subTableOffset << std::endl;
+
+        #ifdef DEBUG
+            std::cout << curr_cmap.platformID << "\t" << curr_cmap.encodingID << "\t" << curr_cmap.subTableOffset << std::endl;
+        #endif
 
         // Currently only unicode will be implemented as it's widely supported over multiple OS
         // TODO: Add MAC and Windows format support
@@ -62,6 +84,8 @@ void Cmap::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffse
             readFormat4(crBuffer, cOffset + curr_cmap.subTableOffset);
         }
     }
+
+    return 1;
 }
 
 /* Function:    readFormat4
@@ -74,7 +98,7 @@ void Cmap::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffse
 void Cmap::readFormat4(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset)
 {
     uint32_t curr_offset = cOffset;
-    std::cout << "Start offset: " << curr_offset << std::endl;
+
     memcpy((void *)&mFormat, crBuffer.data() + cOffset, sizeof(mFormat.format) + sizeof(mFormat.length) +
            sizeof(mFormat.language) + sizeof(mFormat.segCountX2) + sizeof(mFormat.searchRange) +
            sizeof(mFormat.entrySelectory) + sizeof(mFormat.rangeShift));
@@ -91,9 +115,11 @@ void Cmap::readFormat4(const std::vector<uint8_t>& crBuffer, const uint32_t cOff
     mFormat.entrySelectory = lesthtons(mFormat.entrySelectory);
     mFormat.rangeShift = lesthtons(mFormat.rangeShift);
 
-    std::cout << "Format: " << mFormat.format << ", Length: " << mFormat.length << ", Language: " << mFormat.language <<
-    ", Segment Count: " << mFormat.segCountX2 / 2 << ", Search Range: " << mFormat.searchRange << ", Entry selector: " <<
-    mFormat.entrySelectory << ", Range Shift: " << mFormat.rangeShift << std::endl;
+    #ifdef DEBUG
+        std::cout << "Format: " << mFormat.format << ", Length: " << mFormat.length << ", Language: " << mFormat.language <<
+        ", Segment Count: " << mFormat.segCountX2 / 2 << ", Search Range: " << mFormat.searchRange << ", Entry selector: " <<
+        mFormat.entrySelectory << ", Range Shift: " << mFormat.rangeShift << std::endl;
+    #endif
 
     // Now that we have segCountX2 start resizing arrays and copying data
     mFormat.endCode.resize(mFormat.segCountX2 / sizeof(uint16_t));
@@ -118,19 +144,22 @@ void Cmap::readFormat4(const std::vector<uint8_t>& crBuffer, const uint32_t cOff
            mFormat.idRangeOffsets.size() * sizeof(uint16_t));
     curr_offset += mFormat.idRangeOffsets.size() * sizeof(uint16_t);
 
+    #ifdef DEBUG
+        std::cout << "Segment Ranges:\tstartCode\tendCode\tidDelta\tidRangeOffset" << std::endl;
+    #endif
 
-    std::cout << "Segment Ranges:\tstartCode\tendCode\tidDelta\tidRangeOffset" << std::endl;
     for (uint16_t i = 0; i < mFormat.segCountX2 / sizeof(uint16_t); i ++)
     {
         mFormat.endCode[i] = lesthtons(mFormat.endCode[i]);
         mFormat.startCode[i] = lesthtons(mFormat.startCode[i]);
         mFormat.idDelta[i] = lesthtons(mFormat.idDelta[i]);
         mFormat.idRangeOffsets[i] = lesthtons(mFormat.idRangeOffsets[i]);
-        std::cout << "--------------:\t" << (int)mFormat.startCode[i] << "\t\t" << (int)mFormat.endCode[i] << "\t" << (int)mFormat.idDelta[i] << "\t" <<
-        mFormat.idRangeOffsets[i] << std::endl;
-    }
 
-    std::cout << "Curr offset: " << curr_offset << std::endl;
+        #ifdef DEBUG
+            std::cout << "--------------:\t" << (int)mFormat.startCode[i] << "\t\t" << (int)mFormat.endCode[i] << "\t" << (int)mFormat.idDelta[i] << "\t" <<
+            mFormat.idRangeOffsets[i] << std::endl;
+        #endif
+    }
 
     mFormat.glyphIdArray.resize((mFormat.length - (curr_offset - cOffset)) / sizeof(uint16_t));
     memcpy(mFormat.glyphIdArray.data(), crBuffer.data() + curr_offset, mFormat.glyphIdArray.size() * sizeof(uint16_t));

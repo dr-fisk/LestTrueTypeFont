@@ -1,25 +1,37 @@
-all : main
+SHELL := /bin/bash
 
 objs = lestTtf.o endianGeneral.o cmap.o head.o glyf.o loca.o maxp.o hhea.o hmtx.o name.o post.o
 CC = g++
 
-ifneq ($(DEBUG), 1)
-  Q=@
-  DEBUG = 0
-endif
+Q=@
 
 CFLAGS = -g -std=c++17 -MMD -Wall -Werror
+EXEC  = main
+
+ifeq ($(BUILD), D)
+	CFLAGS += -DDEBUG
+endif
+
+ifeq ($(TARGET), win)
+	CC = x86_64-w64-mingw32-g++
+	CFLAGS += -Wextra -static-libgcc -static-libstdc++
+	EXEC = main.exe
+	LDFLAGS = -lws2_32
+endif
+
+all: $(EXEC)
+
 StateDeps := $(patsubst %.o, %.d, $(objs))
 -include $(StateDeps)
 export
 
 %.o: %.c
 	@echo "MAKE $<"
-	$(Q)$(CC) $(CFLAGS) -c $<
+	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -c $<
 
-main: $(objs) main.c
+$(EXEC): $(objs) main.c
 	@echo "MAKE $@"
-	$(Q)$(CC) $(CFLAGS) main.c $(objs) -o $@
+	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) main.c $(objs) -o $@
 
 clean:
-	rm *.o *.d
+	rm *.o *.d *.exe

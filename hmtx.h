@@ -31,7 +31,7 @@ class Hmtx : public TrueTypeTable
         Hmtx(){}
         Hmtx(const uint16_t cNumHorMetrics, const uint16_t cNumGlyphs);
         ~Hmtx(){}
-        void readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
+        int8_t readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
     private:
         HmtxHeader mHmtxHeader;
 };

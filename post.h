@@ -33,7 +33,7 @@ class Post : public TrueTypeTable
         Post(){}
         // Post(const uint16_t cNumGlyphs);
         ~Post(){}
-        void readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
+        int8_t readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
     private:
         PostHeader mPostHeader;
 };

@@ -13,8 +13,14 @@ Hmtx::Hmtx(const uint16_t cNumHorMetrics, const uint16_t cNumGlyphs)
     }
 }
 
-void Hmtx::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes)
+int8_t Hmtx::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes)
 {
+    if (0 >= cNumBytes)
+    {
+        std::cout << "Error: cnumbytes less than 0." << std::endl;
+        return -1;
+    }
+
     memcpy(mHmtxHeader.hMetrics.data(), crBuffer.data() + cOffset,
            mHmtxHeader.hMetrics.size() * sizeof(LongHorMetric));
     uint32_t next_offset = cOffset + mHmtxHeader.hMetrics.size() * sizeof(LongHorMetric);
@@ -26,7 +32,11 @@ void Hmtx::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffse
     {
         metrics.advanceWidth = lesthtons(metrics.advanceWidth);
         metrics.leftSideBearing = lesthtons(metrics.leftSideBearing);
-        std::cout << i << ". advWid: " << metrics.advanceWidth <<  ", LSBear: " << metrics.leftSideBearing << std::endl;
+
+        #ifdef DEBUG
+            std::cout << i << ". advWid: " << metrics.advanceWidth <<  ", LSBear: " << metrics.leftSideBearing << std::endl;
+        #endif
+        
         i++;
     }
     
@@ -34,7 +44,13 @@ void Hmtx::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffse
     for(auto& side_bearing : mHmtxHeader.leftSideBearing)
     {
         side_bearing = lesthtons(side_bearing);
-        std::cout << i << ". Left Side Bearing Val: " << side_bearing << std::endl;
+
+        #ifdef DEBUG
+            std::cout << i << ". Left Side Bearing Val: " << side_bearing << std::endl;
+        #endif
+
         i++;
     }
+
+    return 1;
 }

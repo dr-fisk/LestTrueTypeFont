@@ -1,5 +1,5 @@
 #include "endianGeneral.h"
-
+#include <iostream>
 // Swaps endianness for short
 uint16_t lesthtons(uint16_t val)
 {
@@ -27,6 +27,13 @@ uint64_t lesthtonll(uint64_t val)
     uint64_t finalResult = result1;
     finalResult <<= WORD_SIZE + WORD_SIZE;
     return finalResult | result2;
+}
+
+uint8_t readBytePtr(uint8_t* &rpPtr)
+{
+    uint8_t result = *rpPtr;
+    rpPtr ++;
+    return result;
 }
 
 uint16_t read2BytesPtr(uint8_t* &rpPtr)
@@ -61,4 +68,29 @@ uint64_t read8BytesPtr(uint8_t* &rpPtr)
     uint64_t finalResult = result2;
     finalResult <<= WORD_SIZE + WORD_SIZE;
     return (finalResult | result1);
+}
+
+float f2Dot14(const uint16_t cVal)
+{
+    const uint16_t first_2_bits = 0xC000;
+    const uint16_t neg_sign = 0x8000;
+    const uint16_t last_14_bits = 0x3fff;
+    const float divisor = 16384.0;
+    int8_t int_val = 0;
+    float fraction = 0;
+
+    if (neg_sign & cVal)
+    {
+        int_val = ((~cVal & first_2_bits) >> F2DOT14_SHIFT) + 1;
+        int_val *= -1;
+    }
+    else
+    {
+        int_val = (cVal & first_2_bits) >> F2DOT14_SHIFT;
+    }
+
+    fraction = cVal & last_14_bits;
+    fraction = (float)int_val + (fraction / divisor);
+
+    return fraction;
 }

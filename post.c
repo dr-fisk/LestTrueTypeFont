@@ -8,7 +8,7 @@ enum PostVersion
     VERSION_3   = 0x00030000
 };
 
-void Post::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes)
+int8_t Post::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes)
 {
     uint32_t bytes_copied = 0;
     uint8_t *ptr = (uint8_t *)crBuffer.data() + cOffset;
@@ -35,22 +35,23 @@ void Post::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffse
 
     if (VERSION_2 == mPostHeader.version)
     {
-        std::cout << "Post Version: 2.0" << std::endl;
-        std::cout << "Post Italic Angle: " << mPostHeader.italicAngle << std::endl;
-        std::cout << "Post UnderLine Pos: " << mPostHeader.underlinePosition << std::endl;
-        std::cout << "Post Underline Thick: " << mPostHeader.underlineThickness << std::endl;
-        std::cout << "Post isFixedPitch: " << mPostHeader.isFixedPitch << std::endl;
-        std::cout << "Post Min Mem 42: " <<  mPostHeader.minMemType42 << std::endl;
-        std::cout << "Post Max Mem 42: " << mPostHeader.maxMemType42 << std::endl;
-        std::cout << "Post Min Mem 1: " << mPostHeader.minMemType1 << std::endl;
-        std::cout << "Post Max Mem 1: " << mPostHeader.maxMemType1 << std::endl;
-        std::cout << "Post num Glyphs: " << mPostHeader.numGlyphs << std::endl;
+        #ifdef DEBUG
+            std::cout << "Post Version: 2.0" << std::endl;
+            std::cout << "Post Italic Angle: " << mPostHeader.italicAngle << std::endl;
+            std::cout << "Post UnderLine Pos: " << mPostHeader.underlinePosition << std::endl;
+            std::cout << "Post Underline Thick: " << mPostHeader.underlineThickness << std::endl;
+            std::cout << "Post isFixedPitch: " << mPostHeader.isFixedPitch << std::endl;
+            std::cout << "Post Min Mem 42: " <<  mPostHeader.minMemType42 << std::endl;
+            std::cout << "Post Max Mem 42: " << mPostHeader.maxMemType42 << std::endl;
+            std::cout << "Post Min Mem 1: " << mPostHeader.minMemType1 << std::endl;
+            std::cout << "Post Max Mem 1: " << mPostHeader.maxMemType1 << std::endl;
+            std::cout << "Post num Glyphs: " << mPostHeader.numGlyphs << std::endl;
+        #endif
 
         mPostHeader.glyphNameIndex.resize(mPostHeader.numGlyphs);
         memcpy(mPostHeader.glyphNameIndex.data(), ptr, mPostHeader.glyphNameIndex.size() * sizeof(uint16_t));
         ptr += mPostHeader.glyphNameIndex.size() * sizeof(uint16_t);
         bytes_copied += mPostHeader.glyphNameIndex.size() * sizeof(uint16_t);
-        std::cout << "Offset: " << bytes_copied << std::endl;
         mPostHeader.stringData.resize(cNumBytes - bytes_copied);
         memcpy(mPostHeader.stringData.data(), ptr, mPostHeader.stringData.size());
 
@@ -61,11 +62,16 @@ void Post::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffse
         for (auto& glyph_name : mPostHeader.glyphNameIndex)
         {
             glyph_name = lesthtons(glyph_name);
-            std::cout << "Glyf " << i << " -> ";
+
+            #ifdef DEBUG
+                std::cout << "Glyf " << i << " -> ";
+            #endif
 
             if (258 > glyph_name)
             {
-                std::cout << " Mac Glyph # " << glyph_name << ", " << std::endl;
+                #ifdef DEBUG
+                    std::cout << " Mac Glyph # " << glyph_name << ", " << std::endl;
+                #endif
             }
             else
             {
@@ -74,7 +80,10 @@ void Post::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffse
                 memcpy(&str[0], &mPostHeader.stringData[first_length_byte + glyph_name - 258 + 1], length);
                 first_length_byte += length;
                 
-                std::cout << " PsGlyf Name # " << glyph_name - 258 + 1 << ", " << str << std::endl;
+                #ifdef DEBUG
+                    std::cout << " PsGlyf Name # " << glyph_name - 258 + 1 << ", " << str << std::endl;
+                #endif
+            
                 str.clear();
             }
             i++;
@@ -83,7 +92,8 @@ void Post::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffse
     else
     {
         std::cout << "Error: " << mPostHeader.version << " not currently supported." << std::endl;
+        return -1;
     }
-    // std::vector<uint16_t> glyphNameIndex;
-    // std::vector<uint8_t> stringData;
+
+    return 1;
 }

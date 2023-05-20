@@ -4,6 +4,7 @@
 #include <queue>
 
 #include "lestTtf.h"
+#include "lestTableData.h"
 #include "endianGeneral.h"
 #include "hhea.h"
 #include "glyf.h"
@@ -15,99 +16,32 @@
 #include "name.h"
 #include "post.h"
 
-enum TTFRequiredTablesBitMask
-{
-    TTF_CMAP = 0x0001,
-    TTF_GLYF = 0x0002,
-    TTF_HEAD = 0x0004,
-    TTF_HHEA = 0x0008,
-    TTF_HMTX = 0x0010,
-    TTF_LOCA = 0x0020,
-    TTF_MAXP = 0x0040,
-    TTF_NAME = 0x0080,
-    TTF_POST = 0x0100,
-    TTF_OS2 = 0x0200,
-    TTF_REQUIRED = 0x03FF,
-    TTF_NOTREQ = 0x0000
-};
-
-enum TTFTableType
-{
-    TABLE_CMAP,
-    TABLE_GLYF,
-    TABLE_HEAD,
-    TABLE_HHEA,
-    TABLE_HMTX,
-    TABLE_LOCA,
-    TABLE_MAXP,
-    TABLE_NAME,
-    TABLE_POST,
-    TABLE_OS2,
-    TABLE_CVT,
-    TABLE_FPGM,
-    TABLE_HDMX,
-    TABLE_KERN,
-    TABLE_PREP,
-    TABLE_VDMX,
-    TABLE_GASP,
-    TABLE_DSIG,
-    TABLE_GDEF,
-    TABLE_GSUB,
-    TABLE_JSTF,
-    TABLE_LTSH,
-    TABLE_PCLT
-};
-
-static const std::string sCMAP = "cmap";
-static const std::string sGLYF = "glyf";
-static const std::string sHEAD = "head";
-static const std::string sHHEA = "hhea";
-static const std::string sHMTX = "hmtx";
-static const std::string sLOCA = "loca";
-static const std::string sMAXP = "maxp";
-static const std::string sNAME = "name";
-static const std::string sPOST = "post";
-static const std::string sOS2  = "OS/2";
-static const std::string sCVT  = "cvt ";
-static const std::string sFPGM = "fpgm";
-static const std::string sHDMX = "hdmx";
-static const std::string sKERN = "kern";
-static const std::string sPREP = "prep";
-static const std::string sVDMX = "VDMX";
-static const std::string sGASP = "gasp";
-static const std::string sDSIG = "DSIG";
-static const std::string sGDEF = "GDEF";
-static const std::string sGSUB = "GSUB";
-static const std::string sJSTF = "JSTF";
-static const std::string sLTSH = "LTSH";
-static const std::string sPCLT = "PCLT";
-
-static const std::map<std::string, std::pair<TTFRequiredTablesBitMask, TTFTableType>> sTableTags = {
-                                                                            // Required Tables in ttf files
-                                                                            {sCMAP, {TTF_CMAP, TABLE_CMAP}},
-                                                                            {sGLYF, {TTF_GLYF, TABLE_GLYF}},
-                                                                            {sHEAD, {TTF_HEAD, TABLE_HEAD}},
-                                                                            {sHHEA, {TTF_HHEA, TABLE_HHEA}},
-                                                                            {sHMTX, {TTF_HMTX, TABLE_HMTX}},
-                                                                            {sLOCA, {TTF_LOCA, TABLE_LOCA}},
-                                                                            {sMAXP, {TTF_MAXP, TABLE_MAXP}},
-                                                                            {sNAME, {TTF_NAME, TABLE_NAME}},
-                                                                            {sPOST, {TTF_POST, TABLE_POST}},
-                                                                            {sOS2, {TTF_OS2, TABLE_OS2}},
-                                                                            // Option Tables in ttf files
-                                                                            {sCVT, {TTF_NOTREQ, TABLE_CVT}},
-                                                                            {sFPGM, {TTF_NOTREQ, TABLE_FPGM}},
-                                                                            {sHDMX, {TTF_NOTREQ, TABLE_HDMX}},
-                                                                            {sKERN, {TTF_NOTREQ, TABLE_KERN}},
-                                                                            {sPREP, {TTF_NOTREQ, TABLE_PREP}},
-                                                                            {sVDMX, {TTF_NOTREQ, TABLE_VDMX}},
-                                                                            {sGASP, {TTF_NOTREQ, TABLE_GASP}},
-                                                                            {sDSIG, {TTF_NOTREQ, TABLE_DSIG}},
-                                                                            {sGDEF, {TTF_NOTREQ, TABLE_GDEF}},
-                                                                            {sGSUB, {TTF_NOTREQ, TABLE_GSUB}},
-                                                                            {sJSTF, {TTF_NOTREQ, TABLE_JSTF}},
-                                                                            {sLTSH, {TTF_NOTREQ, TABLE_LTSH}},
-                                                                            {sPCLT, {TTF_NOTREQ, TABLE_PCLT}} };
+static const std::map<std::string, TableData> sTableTags = {
+                                                            // Required Tables in ttf files
+                                                            {sCMAP, {TTF_CMAP, TABLE_CMAP, false}},
+                                                            {sGLYF, {TTF_GLYF, TABLE_GLYF, true}},
+                                                            {sHEAD, {TTF_HEAD, TABLE_HEAD, false}},
+                                                            {sHHEA, {TTF_HHEA, TABLE_HHEA, false}},
+                                                            {sHMTX, {TTF_HMTX, TABLE_HMTX, true}},
+                                                            {sLOCA, {TTF_LOCA, TABLE_LOCA, false}},
+                                                            {sMAXP, {TTF_MAXP, TABLE_MAXP, false}},
+                                                            {sNAME, {TTF_NAME, TABLE_NAME, false}},
+                                                            {sPOST, {TTF_POST, TABLE_POST, false}},
+                                                            {sOS2, {TTF_OS2, TABLE_OS2, false}},
+                                                            // Option Tables in ttf files
+                                                            {sCVT, {TTF_NOTREQ, TABLE_CVT,   false}},
+                                                            {sFPGM, {TTF_NOTREQ, TABLE_FPGM, false}},
+                                                            {sHDMX, {TTF_NOTREQ, TABLE_HDMX,false}},
+                                                            {sKERN, {TTF_NOTREQ, TABLE_KERN,false}},
+                                                            {sPREP, {TTF_NOTREQ, TABLE_PREP,false}},
+                                                            {sVDMX, {TTF_NOTREQ, TABLE_VDMX,false}},
+                                                            {sGASP, {TTF_NOTREQ, TABLE_GASP,false}},
+                                                            {sDSIG, {TTF_NOTREQ, TABLE_DSIG,false}},
+                                                            {sGDEF, {TTF_NOTREQ, TABLE_GDEF,false}},
+                                                            {sGSUB, {TTF_NOTREQ, TABLE_GSUB,false}},
+                                                            {sJSTF, {TTF_NOTREQ, TABLE_JSTF,false}},
+                                                            {sLTSH, {TTF_NOTREQ, TABLE_LTSH,false}},
+                                                            {sPCLT, {TTF_NOTREQ, TABLE_PCLT,false}} };
 
 LestTrueType::LestTrueType() :  mBufferOffset(0)
 {
@@ -167,14 +101,19 @@ void LestTrueType::readOffsetSubTable(const std::vector<uint8_t>& crBuffer)
     mFontDirectory.offSub.entrySelector = lesthtons(mFontDirectory.offSub.entrySelector);
     mFontDirectory.offSub.rangeShift = lesthtons(mFontDirectory.offSub.rangeShift);
 
-    std::cout << "scalar type: " << mFontDirectory.offSub.scalarType << std::endl;
-    std::cout << "numTables type: " << mFontDirectory.offSub.numTables << std::endl;
-    std::cout << "search range type: " << mFontDirectory.offSub.searchRange << std::endl;
-    std::cout << "entry selector type: " << mFontDirectory.offSub.entrySelector << std::endl;
-    std::cout << "range shift type: " << mFontDirectory.offSub.rangeShift << std::endl;
+    #ifdef DEBUG
+        std::cout << "scalar type: " << mFontDirectory.offSub.scalarType << std::endl;
+        std::cout << "numTables type: " << mFontDirectory.offSub.numTables << std::endl;
+        std::cout << "search range type: " << mFontDirectory.offSub.searchRange << std::endl;
+        std::cout << "entry selector type: " << mFontDirectory.offSub.entrySelector << std::endl;
+        std::cout << "range shift type: " << mFontDirectory.offSub.rangeShift << std::endl;
+    #endif
 
     mBufferOffset += sizeof(mFontDirectory.offSub);
-    std::cout << "offset: " << mBufferOffset << std::endl;
+    
+    #ifdef DEBUG
+        std::cout << "offset: " << mBufferOffset << std::endl;
+    #endif
 }
 
 /* Function:    readTableDirectory
@@ -189,7 +128,9 @@ int8_t LestTrueType::readTableDirectory(const std::vector<uint8_t>& crBuffer)
            sizeof(TableDirectory) * mFontDirectory.tableDir.size());
     mBufferOffset += sizeof(TableDirectory) * mFontDirectory.tableDir.size();
 
-    std::cout << "#)\ttag\tlen\toffset" << std::endl;
+    #ifdef DEBUG
+        std::cout << "#)\ttag\tlen\toffset" << std::endl;
+    #endif
     std::string tag;
     std::shared_ptr<TrueTypeTable> table;
     std::queue<std::pair<std::string, TableDirectory>> processing_req;
@@ -201,7 +142,11 @@ int8_t LestTrueType::readTableDirectory(const std::vector<uint8_t>& crBuffer)
         curr_table.checkSum = lesthtonl(curr_table.checkSum);
         curr_table.offset = lesthtonl(curr_table.offset);
         curr_table.length = lesthtonl(curr_table.length);
-        std::cout << num << ")\t" << curr_table.tag[0] << curr_table.tag[1] << curr_table.tag[2] << curr_table.tag[3] << "\t" << curr_table.length << "\t" << curr_table.offset << std::endl;
+
+        #ifdef DEBUG
+            std::cout << num << ")\t" << curr_table.tag[0] << curr_table.tag[1] << curr_table.tag[2] << curr_table.tag[3] << "\t" << curr_table.length << "\t" << curr_table.offset << std::endl;
+        #endif
+        
         num ++;
         tag = curr_table.tag[0];
         tag += curr_table.tag[1];
@@ -228,9 +173,13 @@ int8_t LestTrueType::readTableDirectory(const std::vector<uint8_t>& crBuffer)
         }
         else
         {
-            if (sHMTX != tag)
+            if (!sTableTags.at(tag).delayProcessing)
             {
-                table->readTable(crBuffer, curr_table.offset, curr_table.length);
+                if (-1 == table->readTable(crBuffer, curr_table.offset, curr_table.length))
+                {
+                    return -1;
+                }
+
                 mTables[tag] = table;
             }
             else
@@ -256,11 +205,16 @@ int8_t LestTrueType::readTableDirectory(const std::vector<uint8_t>& crBuffer)
         }
         else
         {
-            mTables[queue_top.first]->readTable(crBuffer, queue_top.second.offset, queue_top.second.length);
+            if (-1 == mTables[queue_top.first]->readTable(crBuffer, queue_top.second.offset, queue_top.second.length))
+            {
+                return -1;
+            }
         }
     }
 
-    std::cout << "Offset: " << (int) mBufferOffset << std::endl;
+    #ifdef DEBUG
+        std::cout << "Offset: " << (int) mBufferOffset << std::endl;
+    #endif
 
     if (TTF_REQUIRED != required_tables_enc)
     {
@@ -286,19 +240,19 @@ int8_t LestTrueType::copyTableBitMask(const std::string& crTag, uint16_t& rBitMa
         return -1;
     }
 
-    if (TTF_NOTREQ == sTableTags.at(crTag).first)
+    if (TTF_NOTREQ == sTableTags.at(crTag).mask)
     {
         return 1;
     }
 
-    rBitMask |= sTableTags.at(crTag).first;
+    rBitMask |= sTableTags.at(crTag).mask;
 
     return 1;
 }
 
 std::shared_ptr<TrueTypeTable> LestTrueType::tableFactory(const std::string& crTag)
 {
-    switch(sTableTags.at(crTag).second)
+    switch(sTableTags.at(crTag).type)
     {
         case TABLE_CMAP:
             return std::make_shared<Cmap>(Cmap());
@@ -311,7 +265,7 @@ std::shared_ptr<TrueTypeTable> LestTrueType::tableFactory(const std::string& crT
         case TABLE_HMTX:
             return std::make_shared<Hmtx>(Hmtx());
         case TABLE_LOCA:
-            return std::make_shared<Loca>(Loca());
+            return std::make_shared<Loca>(Loca(std::dynamic_pointer_cast<HeadTable>(mTables[sHEAD])->getLocaFormat()));
         case TABLE_MAXP:
             return std::make_shared<Maxp>(Maxp());
         case TABLE_NAME:
@@ -354,11 +308,14 @@ std::shared_ptr<TrueTypeTable> LestTrueType::tableFactory(const std::string& crT
 
 std::shared_ptr<TrueTypeTable> LestTrueType::processRemainingTables(const std::string& crTag)
 {
-    switch(sTableTags.at(crTag).second)
+    switch(sTableTags.at(crTag).type)
     {
         case TABLE_HMTX:
             return std::make_shared<Hmtx>(Hmtx(std::dynamic_pointer_cast<Hhea>(mTables[sHHEA])->getNumOfLongHorMetrics(),
                                                std::dynamic_pointer_cast<Maxp>(mTables[sMAXP])->getNumGlyphs()));
+        case TABLE_GLYF:
+            return std::make_shared<Glyf>(Glyf(std::dynamic_pointer_cast<Maxp>(mTables[sMAXP])->getNumGlyphs(),
+                                               std::dynamic_pointer_cast<Loca>(mTables[sLOCA])));
         default:
             std::cout << "Error: Table provided can be processed in main loop." << std::endl;
             return nullptr;

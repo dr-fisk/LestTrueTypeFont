@@ -36,7 +36,7 @@ class Name : public TrueTypeTable
     public:
         Name(){}
         ~Name(){}
-        void readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
+        int8_t readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
     private:
         NamingTable mNameTable;
 };

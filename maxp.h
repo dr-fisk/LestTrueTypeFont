@@ -27,7 +27,7 @@ class Maxp : public TrueTypeTable
     public:
         Maxp(){}
         ~Maxp(){}
-        void readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
+        int8_t readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
         uint16_t getNumGlyphs() const;
     private:
         MaxpV1 mMaxpV1;

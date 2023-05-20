@@ -6,12 +6,13 @@
 class Loca : public TrueTypeTable
 {
     public:
-        Loca(){}
+        Loca(const int16_t cLocaFormat) : mLocaFormat(cLocaFormat){}
         ~Loca(){}
-        void readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
-        uint32_t getGlyphOffset(const int16_t cLocaType, const uint32_t cGlyphIndex);
+        int8_t readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
+        uint32_t getGlyphOffset(const uint32_t cGlyphIndex);
     private:
         std::vector<uint8_t> mByteArray;
+        int16_t mLocaFormat;
 };
 
 #endif

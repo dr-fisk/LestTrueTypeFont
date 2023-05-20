@@ -36,7 +36,8 @@ class HeadTable : public TrueTypeTable
     public:
         HeadTable();
         ~HeadTable(){}
-        void readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
+        int8_t readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
+        int16_t getLocaFormat() const;
     private:
         HeadHeader mHeadHeader;
 };
