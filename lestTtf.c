@@ -7,7 +7,6 @@
 #include "lestTableData.h"
 #include "endianGeneral.h"
 #include "hhea.h"
-#include "glyf.h"
 #include "cmap.h"
 #include "hmtx.h"
 #include "maxp.h"
@@ -162,6 +161,7 @@ int8_t LestTrueType::readTableDirectory(const std::vector<uint8_t>& crBuffer)
         // Check to see if table exists in map
         if (-1 == copyTableBitMask(tag, required_tables_enc))
         {
+            std::cout << "Bit table mask doesn't exist." << std::endl;
             return -1;
         }
 
@@ -177,6 +177,7 @@ int8_t LestTrueType::readTableDirectory(const std::vector<uint8_t>& crBuffer)
             {
                 if (-1 == table->readTable(crBuffer, curr_table.offset, curr_table.length))
                 {
+                    std::cout << "Read table failed for " << tag << std::endl;
                     return -1;
                 }
 
@@ -201,12 +202,15 @@ int8_t LestTrueType::readTableDirectory(const std::vector<uint8_t>& crBuffer)
         // Should not be possible but just in case
         if (nullptr == mTables[queue_top.first])
         {
-            std::cout << "Table is either invalid or currently not implemented." << std::endl;
+            #ifdef DEBUG
+                std::cout << "Table is either invalid or currently not implemented." << std::endl;
+                #endif
         }
         else
         {
             if (-1 == mTables[queue_top.first]->readTable(crBuffer, queue_top.second.offset, queue_top.second.length))
             {
+                std::cout << "Delayed read table failed for " << queue_top.first << std::endl;
                 return -1;
             }
         }
@@ -223,7 +227,7 @@ int8_t LestTrueType::readTableDirectory(const std::vector<uint8_t>& crBuffer)
         return -1;
     }
 
-    return 0;
+    return 1;
 }
 
 /* Function:    copyTableBitMask
@@ -320,4 +324,31 @@ std::shared_ptr<TrueTypeTable> LestTrueType::processRemainingTables(const std::s
             std::cout << "Error: Table provided can be processed in main loop." << std::endl;
             return nullptr;
     }
+}
+
+uint16_t LestTrueType::getGlyphIndex(const uint16_t cCodePoint)
+{
+    return std::dynamic_pointer_cast<Cmap>(mTables[sCMAP])->getGlyphIndex(cCodePoint);
+}
+
+std::vector<GlyfHeader> LestTrueType::getGlyphOutlines()
+{
+    return std::dynamic_pointer_cast<Glyf>(mTables[sGLYF])->getGlyphOutlines();
+}
+
+int8_t LestTrueType::getSpecifcCharacterOutline(const uint16_t cCodePoint, GlyfHeader& rGlyph)
+{
+    const uint16_t IDX = std::dynamic_pointer_cast<Cmap>(mTables[sCMAP])->getGlyphIndex(cCodePoint);
+    std::cout << cCodePoint << " has an offset of " << IDX << std::endl;
+
+    if (IDX > std::dynamic_pointer_cast<Maxp>(mTables[sMAXP])->getNumGlyphs())
+    {
+        std::cout << "Max glyphs is: " << std::dynamic_pointer_cast<Maxp>(mTables[sMAXP])->getNumGlyphs() << std::endl;
+        std::cout << "Error: index " << IDX << " received out of bounds." << std::endl;
+        return -1;
+    }
+
+    rGlyph = std::dynamic_pointer_cast<Glyf>(mTables[sGLYF])->getSpecifcCharacterOutline(IDX);
+
+    return 1;
 }

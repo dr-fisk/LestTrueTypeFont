@@ -18,18 +18,6 @@ enum ComponentGlyphFlags
     COMPONENT_RESERVED = 0xE010 
 };
 
-enum SimpleGlyphFlags
-{
-    ON_CURVE_POINT = 0x01,
-    X_SHORT_VECTOR = 0x02,
-    Y_SHORT_VECTOR = 0x04,
-    REPEAT_FLAG    = 0x08,
-    X_IS_SAME_OR_POSITIVE_X_SHORT_VECTOR = 0x10,
-    Y_IS_SAME_OR_POSITIVE_Y_SHORT_VECTOR = 0x20,
-    OVERLAP_SIMPLE = 0x40,
-    SIMPLE_RESERVED = 0x80
-};
-
 Glyf::Glyf(const uint16_t cNumGlyphs, const std::shared_ptr<Loca>& crpLoca)
 {
     mLoca = crpLoca;
@@ -73,12 +61,15 @@ int8_t Glyf::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOff
         {
             if (-1 == readSimpleGlyph(ptr, glyph))
             {
+                std::cout << "Error reading simple glyf." << std::endl;
                 return -1;
             }
         }
 
         i ++;
-        std::cout << std::endl;
+        #ifdef DEBUG
+            std::cout << std::endl;
+        #endif
     }
 
     return 1;
@@ -194,7 +185,9 @@ void Glyf::readCompoundGlyph(uint8_t *pPtr, GlyfHeader& rGlyph)
 
 int8_t Glyf::readSimpleGlyph(uint8_t *pPtr, GlyfHeader& rGlyph)
 {
-    std::cout << std::endl;
+    #ifdef DEBUG
+        std::cout << std::endl;
+    #endif
     rGlyph.endPtsOfContours.resize(rGlyph.numberofContours);
 
     #ifdef DEBUG
@@ -211,7 +204,9 @@ int8_t Glyf::readSimpleGlyph(uint8_t *pPtr, GlyfHeader& rGlyph)
             std::cout << " " << num_endpts << ": " << end_pts << std::endl;
         #endif
     }
-    std::cout << std::endl;
+    #ifdef DEBUG
+        std::cout << std::endl;
+    #endif
 
     rGlyph.instructionLength = read2BytesPtr(pPtr);
 
@@ -323,8 +318,9 @@ int8_t Glyf::readSimpleGlyphCoords(uint8_t *pPtr, GlyfHeader& rGlyph)
     {
         curr_flag = ((rGlyph.flags[i] & X_SHORT_VECTOR) >> 1) | ((rGlyph.flags[i] & X_IS_SAME_OR_POSITIVE_X_SHORT_VECTOR) >> 3);
         
-        if (readCoord(pPtr, rGlyph.xCoordinates[i], curr_flag))
+        if (-1 == readCoord(pPtr, rGlyph.xCoordinates[i], curr_flag))
         {
+            std::cout << "Error occurred reading xcoodrinate from simple glyf." << std::endl;
             return -1;
         }
         
@@ -338,8 +334,9 @@ int8_t Glyf::readSimpleGlyphCoords(uint8_t *pPtr, GlyfHeader& rGlyph)
     {
         curr_flag = ((rGlyph.flags[i] & Y_SHORT_VECTOR) >> 2) | ((rGlyph.flags[i] & Y_IS_SAME_OR_POSITIVE_Y_SHORT_VECTOR) >> 4);
         
-        if (readCoord(pPtr, rGlyph.yCoordinates[i], curr_flag))
+        if (-1 == readCoord(pPtr, rGlyph.yCoordinates[i], curr_flag))
         {
+            std::cout << "Error occurred reading ycoodrinate from simple glyf." << std::endl;
             return -1;
         }
 
@@ -379,4 +376,14 @@ int8_t Glyf::readCoord(uint8_t* &rpPtr, int16_t& rCoord, const uint8_t cFlag)
     }
 
     return 1;
+}
+
+std::vector<GlyfHeader> Glyf::getGlyphOutlines()
+{
+    return mGlyfHeader;
+}
+
+GlyfHeader Glyf::getSpecifcCharacterOutline(const uint16_t cIndex)
+{
+    return mGlyfHeader[cIndex];
 }

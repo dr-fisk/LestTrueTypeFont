@@ -205,23 +205,17 @@ uint16_t Cmap::getGlyphIndex(const uint16_t cCodePoint)
         if (mFormat.idRangeOffsets[glyph_index] == 0)
         {
             // If ID range offset is 0, add codepoint to the current ID Delta and that is your index
-            return mFormat.idDelta[glyph_index] + cCodePoint;
+            return (uint16_t)(mFormat.idDelta[glyph_index] + cCodePoint);
         }
         // if not 0 then take ID Range Offsets Value and add it to the address of the value
         else
         {
-            // This algorithm is pretty genius it lets us iterate from the idRangeOffsets contiguous pointer data into 
-            // the glyphIdArray contiguous pointer data
-            // However, due to how this is stored in a struct, the size of the pointer for glyphIdArray must be skipped
-            // as those bytes come right after the data of idRangeOffsets end.
-            // That is why we are adding the sizeof(glyphIdArray)
-            uint16_t *ptr = mFormat.idRangeOffsets.data() + glyph_index + mFormat.idRangeOffsets[glyph_index] / 2 
-                            + sizeof(mFormat.glyphIdArray.data());
-            ptr += cCodePoint - mFormat.startCode[glyph_index];
+            uint16_t offset = glyph_index + mFormat.idRangeOffsets[glyph_index] / 2 +
+                              cCodePoint - mFormat.startCode[glyph_index] - mFormat.idRangeOffsets.size();
 
-            if (0 != *ptr)
+            if (0 != offset)
             {
-                return *ptr + mFormat.idDelta[glyph_index];
+                return (mFormat.glyphIdArray[mFormat.idDelta[glyph_index] + offset]);
             }
         }
     }

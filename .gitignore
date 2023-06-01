@@ -6,3 +6,4 @@ filedump
 main
 *.exe
 numlines.sh
+*.dll

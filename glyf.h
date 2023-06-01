@@ -4,6 +4,18 @@
 #include "ttfTable.h"
 #include "loca.h"
 
+enum SimpleGlyphFlags
+{
+    ON_CURVE_POINT = 0x01,
+    X_SHORT_VECTOR = 0x02,
+    Y_SHORT_VECTOR = 0x04,
+    REPEAT_FLAG    = 0x08,
+    X_IS_SAME_OR_POSITIVE_X_SHORT_VECTOR = 0x10,
+    Y_IS_SAME_OR_POSITIVE_Y_SHORT_VECTOR = 0x20,
+    OVERLAP_SIMPLE = 0x40,
+    SIMPLE_RESERVED = 0x80
+};
+
 struct CompoundGlyph
 {
     uint16_t flags;
@@ -52,6 +64,8 @@ class Glyf : public TrueTypeTable
         ~Glyf(){}
         Glyf(const uint16_t cNumGlyphs, const std::shared_ptr<Loca>& crpLoca);
         int8_t readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
+        std::vector<GlyfHeader> getGlyphOutlines();
+        GlyfHeader getSpecifcCharacterOutline(const uint16_t cIndex);
     private:
         void readCompoundGlyph(uint8_t *pPtr, GlyfHeader& rGlyph);
         int8_t readSimpleGlyph(uint8_t *pPtr, GlyfHeader& rGlyph);
