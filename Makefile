@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-objs = lestTtf.o endianGeneral.o cmap.o head.o glyf.o loca.o maxp.o hhea.o hmtx.o name.o post.o
+objs = lestTtf.o endianGeneral.o cmap.o head.o glyf.o loca.o maxp.o hhea.o hmtx.o name.o post.o os2.o
 CC = g++
 
 Q=@

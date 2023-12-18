@@ -8,6 +8,9 @@
 #include "lestTtfData.h"
 #include "ttfTable.h"
 #include "glyf.h"
+#include "head.h"
+#include "hhea.h"
+#include "os2.h"
 
 class LestTrueType
 {
@@ -17,7 +20,10 @@ class LestTrueType
         int8_t read(std::string& rTtfPath);
         uint16_t getGlyphIndex(const uint16_t cCodePoint);
         std::vector<GlyfHeader> getGlyphOutlines();
-        int8_t getSpecifcCharacterOutline(const uint16_t cCodePoint, GlyfHeader& rGlyph);
+        int8_t getSpecifcCharacterOutline(const uint16_t cCodePoint, GlyfHeader& rGlyph) const;
+        HheaHeader getHheaHeader() const;
+        HeadHeader getHeadHeaderTable() const;
+        OS2Table getOS2Table() const;
     private:
         int8_t readFontDirectory(const std::vector<uint8_t>& crBuffer);
         void readOffsetSubTable(const std::vector<uint8_t>& crBuffer);

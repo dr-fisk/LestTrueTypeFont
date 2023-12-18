@@ -213,7 +213,7 @@ uint16_t Cmap::getGlyphIndex(const uint16_t cCodePoint)
             uint16_t offset = glyph_index + mFormat.idRangeOffsets[glyph_index] / 2 +
                               cCodePoint - mFormat.startCode[glyph_index] - mFormat.idRangeOffsets.size();
 
-            if (0 != offset)
+            if (0 != offset && mFormat.idDelta[glyph_index] + offset < mFormat.glyphIdArray.size())
             {
                 return (mFormat.glyphIdArray[mFormat.idDelta[glyph_index] + offset]);
             }

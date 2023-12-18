@@ -25,8 +25,8 @@ int8_t HeadTable::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t
     mHeadHeader.created = read8BytesPtr(temp_ptr);
     mHeadHeader.modified = read8BytesPtr(temp_ptr);
     mHeadHeader.xMin = read2BytesPtr(temp_ptr);
-    mHeadHeader.xMax = read2BytesPtr(temp_ptr);
     mHeadHeader.yMin = read2BytesPtr(temp_ptr);
+    mHeadHeader.xMax = read2BytesPtr(temp_ptr);
     mHeadHeader.yMax = read2BytesPtr(temp_ptr);
     mHeadHeader.macStyle = read2BytesPtr(temp_ptr);
     mHeadHeader.lowestRecPPEM = read2BytesPtr(temp_ptr);
@@ -46,4 +46,9 @@ int8_t HeadTable::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t
 int16_t HeadTable::getLocaFormat() const
 {
     return mHeadHeader.indexToLocFormat;
+}
+
+HeadHeader HeadTable::getHeadHeaderTable() const
+{
+    return mHeadHeader;
 }

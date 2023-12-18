@@ -21,8 +21,8 @@ struct HeadHeader
     // Number of seconds since 12:00 midnight that started January 1st 1904 in GMT/UTC time zone.
     uint64_t modified;
     int16_t  xMin;               // Minimum x coordinate across all glyph bounding boxes.
-    int16_t  xMax;               //	Minimum y coordinate across all glyph bounding boxes.
-    int16_t  yMin;               //	Maximum x coordinate across all glyph bounding boxes.
+    int16_t  yMin;               //	Minimum y coordinate across all glyph bounding boxes.
+    int16_t  xMax;               //	Maximum x coordinate across all glyph bounding boxes.
     int16_t  yMax;               //	Maximum y coordinate across all glyph bounding boxes.
     uint16_t macStyle;           // See https://learn.microsoft.com/en-us/typography/opentype/spec/head
     uint16_t lowestRecPPEM;      // Smallest readable size in pixels.
@@ -38,6 +38,7 @@ class HeadTable : public TrueTypeTable
         ~HeadTable(){}
         int8_t readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
         int16_t getLocaFormat() const;
+        HeadHeader getHeadHeaderTable() const;
     private:
         HeadHeader mHeadHeader;
 };

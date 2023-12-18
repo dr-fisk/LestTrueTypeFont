@@ -6,12 +6,10 @@
 #include "lestTtf.h"
 #include "lestTableData.h"
 #include "endianGeneral.h"
-#include "hhea.h"
 #include "cmap.h"
 #include "hmtx.h"
 #include "maxp.h"
 #include "loca.h"
-#include "head.h"
 #include "name.h"
 #include "post.h"
 
@@ -277,7 +275,7 @@ std::shared_ptr<TrueTypeTable> LestTrueType::tableFactory(const std::string& crT
         case TABLE_POST:
             return std::make_shared<Post>(Post());
         case TABLE_OS2:
-            return nullptr;
+            return std::make_shared<OS2>(OS2());
         case TABLE_CVT:
             return nullptr;
         case TABLE_FPGM:
@@ -315,11 +313,12 @@ std::shared_ptr<TrueTypeTable> LestTrueType::processRemainingTables(const std::s
     switch(sTableTags.at(crTag).type)
     {
         case TABLE_HMTX:
-            return std::make_shared<Hmtx>(Hmtx(std::dynamic_pointer_cast<Hhea>(mTables[sHHEA])->getNumOfLongHorMetrics(),
-                                               std::dynamic_pointer_cast<Maxp>(mTables[sMAXP])->getNumGlyphs()));
+            return std::make_shared<Hmtx>(
+              Hmtx(std::dynamic_pointer_cast<Hhea>(mTables.at(sHHEA))->getNumOfLongHorMetrics(),
+              std::dynamic_pointer_cast<Maxp>(mTables.at(sMAXP))->getNumGlyphs()));
         case TABLE_GLYF:
-            return std::make_shared<Glyf>(Glyf(std::dynamic_pointer_cast<Maxp>(mTables[sMAXP])->getNumGlyphs(),
-                                               std::dynamic_pointer_cast<Loca>(mTables[sLOCA])));
+            return std::make_shared<Glyf>(Glyf(std::dynamic_pointer_cast<Maxp>(mTables.at(sMAXP))->getNumGlyphs(),
+                                          std::dynamic_pointer_cast<Loca>(mTables.at(sLOCA))));
         default:
             std::cout << "Error: Table provided can be processed in main loop." << std::endl;
             return nullptr;
@@ -328,27 +327,41 @@ std::shared_ptr<TrueTypeTable> LestTrueType::processRemainingTables(const std::s
 
 uint16_t LestTrueType::getGlyphIndex(const uint16_t cCodePoint)
 {
-    return std::dynamic_pointer_cast<Cmap>(mTables[sCMAP])->getGlyphIndex(cCodePoint);
+    return std::dynamic_pointer_cast<Cmap>(mTables.at(sCMAP))->getGlyphIndex(cCodePoint);
 }
 
 std::vector<GlyfHeader> LestTrueType::getGlyphOutlines()
 {
-    return std::dynamic_pointer_cast<Glyf>(mTables[sGLYF])->getGlyphOutlines();
+    return std::dynamic_pointer_cast<Glyf>(mTables.at(sGLYF))->getGlyphOutlines();
 }
 
-int8_t LestTrueType::getSpecifcCharacterOutline(const uint16_t cCodePoint, GlyfHeader& rGlyph)
+int8_t LestTrueType::getSpecifcCharacterOutline(const uint16_t cCodePoint, GlyfHeader& rGlyph) const
 {
-    const uint16_t IDX = std::dynamic_pointer_cast<Cmap>(mTables[sCMAP])->getGlyphIndex(cCodePoint);
-    std::cout << cCodePoint << " has an offset of " << IDX << std::endl;
+    const uint16_t IDX = std::dynamic_pointer_cast<Cmap>(mTables.at(sCMAP))->getGlyphIndex(cCodePoint);
 
-    if (IDX > std::dynamic_pointer_cast<Maxp>(mTables[sMAXP])->getNumGlyphs())
+    if (IDX > std::dynamic_pointer_cast<Maxp>(mTables.at(sMAXP))->getNumGlyphs())
     {
-        std::cout << "Max glyphs is: " << std::dynamic_pointer_cast<Maxp>(mTables[sMAXP])->getNumGlyphs() << std::endl;
+        std::cout << "Max glyphs is: " << std::dynamic_pointer_cast<Maxp>(mTables.at(sMAXP))->getNumGlyphs() << std::endl;
         std::cout << "Error: index " << IDX << " received out of bounds." << std::endl;
         return -1;
     }
 
-    rGlyph = std::dynamic_pointer_cast<Glyf>(mTables[sGLYF])->getSpecifcCharacterOutline(IDX);
+    rGlyph = std::dynamic_pointer_cast<Glyf>(mTables.at(sGLYF))->getSpecifcCharacterOutline(IDX);
 
     return 1;
+}
+
+HheaHeader LestTrueType::getHheaHeader() const
+{
+    return std::dynamic_pointer_cast<Hhea>(mTables.at(sHHEA))->getHheaHeader();
+}
+
+HeadHeader LestTrueType::getHeadHeaderTable() const
+{
+    return std::dynamic_pointer_cast<HeadTable>(mTables.at(sHEAD))->getHeadHeaderTable();
+}
+
+OS2Table LestTrueType::getOS2Table() const
+{
+  return std::dynamic_pointer_cast<OS2>(mTables.at(sOS2))->getOS2Table(); 
 }

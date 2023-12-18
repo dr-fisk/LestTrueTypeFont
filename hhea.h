@@ -31,6 +31,7 @@ class Hhea : public TrueTypeTable
         ~Hhea(){}
         int8_t readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
         uint16_t getNumOfLongHorMetrics() const;
+        HheaHeader getHheaHeader() const;
     private:
         HheaHeader mHheaHeader;
 };

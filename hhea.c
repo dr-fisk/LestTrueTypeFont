@@ -47,3 +47,8 @@
  {
     return mHheaHeader.numOfLongHorMetrics;
  }
+
+HheaHeader Hhea::getHheaHeader() const
+{
+   return mHheaHeader;
+}
