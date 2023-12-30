@@ -12,8 +12,8 @@ int8_t OS2::readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffs
 {
   if (0 == cNumBytes)
   {
-      std::cout << "Error: Cannot copy 0 bytes." << std::endl;
-      return -1;
+    std::cout << "Error: Cannot copy 0 bytes." << std::endl;
+    return -1;
   }
 
   uint8_t *temp_ptr = (uint8_t *)crBuffer.data();

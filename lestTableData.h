@@ -43,7 +43,9 @@ enum TTFTableType
     TABLE_GSUB,
     TABLE_JSTF,
     TABLE_LTSH,
-    TABLE_PCLT
+    TABLE_PCLT,
+    TABLE_VHEA,
+    TABLE_VMTX
 };
 
 struct TableData
@@ -76,5 +78,7 @@ static const std::string sGSUB = "GSUB";
 static const std::string sJSTF = "JSTF";
 static const std::string sLTSH = "LTSH";
 static const std::string sPCLT = "PCLT";
+static const std::string sVHEA = "vhea";
+static const std::string sVMTX = "vmtx";
 
 #endif

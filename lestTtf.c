@@ -12,6 +12,10 @@
 #include "loca.h"
 #include "name.h"
 #include "post.h"
+#include "cvt.h"
+#include "fpgm.h"
+#include "gasp.h"
+#include "prep.h"
 
 static const std::map<std::string, TableData> sTableTags = {
                                                             // Required Tables in ttf files
@@ -24,21 +28,23 @@ static const std::map<std::string, TableData> sTableTags = {
                                                             {sMAXP, {TTF_MAXP, TABLE_MAXP, false}},
                                                             {sNAME, {TTF_NAME, TABLE_NAME, false}},
                                                             {sPOST, {TTF_POST, TABLE_POST, false}},
-                                                            {sOS2, {TTF_OS2, TABLE_OS2, false}},
+                                                            {sOS2,  {TTF_OS2, TABLE_OS2,   false}},
                                                             // Option Tables in ttf files
-                                                            {sCVT, {TTF_NOTREQ, TABLE_CVT,   false}},
+                                                            {sCVT,  {TTF_NOTREQ, TABLE_CVT,  false}},
                                                             {sFPGM, {TTF_NOTREQ, TABLE_FPGM, false}},
-                                                            {sHDMX, {TTF_NOTREQ, TABLE_HDMX,false}},
-                                                            {sKERN, {TTF_NOTREQ, TABLE_KERN,false}},
-                                                            {sPREP, {TTF_NOTREQ, TABLE_PREP,false}},
-                                                            {sVDMX, {TTF_NOTREQ, TABLE_VDMX,false}},
-                                                            {sGASP, {TTF_NOTREQ, TABLE_GASP,false}},
-                                                            {sDSIG, {TTF_NOTREQ, TABLE_DSIG,false}},
-                                                            {sGDEF, {TTF_NOTREQ, TABLE_GDEF,false}},
-                                                            {sGSUB, {TTF_NOTREQ, TABLE_GSUB,false}},
-                                                            {sJSTF, {TTF_NOTREQ, TABLE_JSTF,false}},
-                                                            {sLTSH, {TTF_NOTREQ, TABLE_LTSH,false}},
-                                                            {sPCLT, {TTF_NOTREQ, TABLE_PCLT,false}} };
+                                                            {sHDMX, {TTF_NOTREQ, TABLE_HDMX, false}},
+                                                            {sKERN, {TTF_NOTREQ, TABLE_KERN, false}},
+                                                            {sPREP, {TTF_NOTREQ, TABLE_PREP, false}},
+                                                            {sVDMX, {TTF_NOTREQ, TABLE_VDMX, false}},
+                                                            {sGASP, {TTF_NOTREQ, TABLE_GASP, false}},
+                                                            {sDSIG, {TTF_NOTREQ, TABLE_DSIG, false}},
+                                                            {sGDEF, {TTF_NOTREQ, TABLE_GDEF, false}},
+                                                            {sGSUB, {TTF_NOTREQ, TABLE_GSUB, false}},
+                                                            {sJSTF, {TTF_NOTREQ, TABLE_JSTF, false}},
+                                                            {sLTSH, {TTF_NOTREQ, TABLE_LTSH, false}},
+                                                            {sPCLT, {TTF_NOTREQ, TABLE_PCLT, false}},
+                                                            {sPCLT, {TTF_NOTREQ, TABLE_PCLT, false}},
+                                                            {sPCLT, {TTF_NOTREQ, TABLE_PCLT, false}}};
 
 LestTrueType::LestTrueType() :  mBufferOffset(0)
 {
@@ -50,13 +56,13 @@ LestTrueType::LestTrueType() :  mBufferOffset(0)
    Parameters:  std::string - File Path to ttf
    Returns:     int8_t      - success or error encountered
  */
-int8_t LestTrueType::read(std::string& rTtfPath)
+int8_t LestTrueType::read(const std::string& crTtfPath)
 {
-    std::ifstream ttfFile(rTtfPath, std::ios::binary);
+    std::ifstream ttfFile(crTtfPath, std::ios::binary);
 
     if (!ttfFile.is_open())
     {
-        std::cout << "Failed to open ttf file: " << rTtfPath << std::endl;
+        std::cout << "Failed to open ttf file: " << crTtfPath << std::endl;
         return -1;
     }
 
@@ -167,7 +173,7 @@ int8_t LestTrueType::readTableDirectory(const std::vector<uint8_t>& crBuffer)
         // At this point all tables can be assumed to exist
         if (nullptr == table)
         {
-            std::cout << "Table is either invalid or currently not implemented." << std::endl;
+            std::cout << tag << " Table is either invalid or currently not implemented." << std::endl;
         }
         else
         {
@@ -201,8 +207,8 @@ int8_t LestTrueType::readTableDirectory(const std::vector<uint8_t>& crBuffer)
         if (nullptr == mTables[queue_top.first])
         {
             #ifdef DEBUG
-                std::cout << "Table is either invalid or currently not implemented." << std::endl;
-                #endif
+                std::cout << queue_top.first << " Table is either invalid or currently not implemented." << std::endl;
+            #endif
         }
         else
         {
@@ -277,19 +283,19 @@ std::shared_ptr<TrueTypeTable> LestTrueType::tableFactory(const std::string& crT
         case TABLE_OS2:
             return std::make_shared<OS2>(OS2());
         case TABLE_CVT:
-            return nullptr;
+            return std::make_shared<Cvt>(Cvt());
         case TABLE_FPGM:
-            return nullptr;
+            return std::make_shared<Fpgm>(Fpgm());
         case TABLE_HDMX:
             return nullptr;
         case TABLE_KERN:
             return nullptr;
         case TABLE_PREP:
-            return nullptr;
+            return std::make_shared<Prep>(Prep());
         case TABLE_VDMX:
-            return nullptr;
+            return std::make_shared<Vdmx>(Vdmx());;
         case TABLE_GASP:
-            return nullptr;
+            return std::make_shared<Gasp>(Gasp());
         case TABLE_DSIG:
             return nullptr;
         case TABLE_GDEF:
@@ -364,4 +370,14 @@ HeadHeader LestTrueType::getHeadHeaderTable() const
 OS2Table LestTrueType::getOS2Table() const
 {
   return std::dynamic_pointer_cast<OS2>(mTables.at(sOS2))->getOS2Table(); 
+}
+
+bool LestTrueType::hasOS2Table() const
+{
+  return nullptr != std::dynamic_pointer_cast<OS2>(mTables.at(sOS2));
+}
+
+VdmxHeader LestTrueType::getVdmxHeader() const
+{
+  return std::dynamic_pointer_cast<Vdmx>(mTables.at(sVDMX))->getVdmxHeader();
 }

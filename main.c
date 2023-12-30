@@ -76,12 +76,86 @@ void printOs2(const LestTrueType cFont)
   std::cout << "------------------------------------------------------------------" << std::endl;
 }
 
+void printVdmx(const LestTrueType cFont)
+{
+  VdmxHeader vdmx = cFont.getVdmxHeader();
+  
+  std::cout << "Vdmx Table Specs" << std::endl;
+  std::cout << "------------------------------------------------------------------" << std::endl;
+  std::cout << "Vdmx version: " << vdmx.version << std::endl;
+  std::cout << "Vdmx numRecs: " << vdmx.numRecs << std::endl;
+  std::cout << "Vdmx numRatios: " << vdmx.numRatios << std::endl;
+
+  int32_t i = 0;
+  for(const auto &ratiorange : vdmx.ratRange)
+  {
+    std::cout << i << " Vdmx bCharSet: " << static_cast<int>(ratiorange.bCharSet) << std::endl;
+    std::cout << i << " Vdmx xRatio: " << static_cast<int>(ratiorange.xRatio) << std::endl;
+    std::cout << i << " Vdmx yStartRatio: " << static_cast<int>(ratiorange.yStartRatio) << std::endl;
+    std::cout << i << " Vdmx yEndRatio: " << static_cast<int>(ratiorange.yEndRatio) << std::endl;
+    i++;
+  }
+
+  i = 0;
+  for(const auto &offsets : vdmx.vdmxGroupOffsets)
+  {
+    std::cout << i << " Vdmx offsets: " << offsets << std::endl;
+  }
+
+  std::cout << "------------------------------------------------------------------" << std::endl;
+}
+
+void printHhea(const LestTrueType cFont)
+{
+  HheaHeader hhea = cFont.getHheaHeader();
+
+  std::cout << "Hhea Table Specs" << std::endl;
+  std::cout << "------------------------------------------------------------------" << std::endl;
+  std::cout << "Hhea version: " << hhea.version << std::endl;
+    std::cout << "Hhea ascent: " << static_cast<int>(hhea.ascent) << std::endl;
+  std::cout << "Hhea descent: " << static_cast<int>(hhea.descent) << std::endl;
+  std::cout << "Hhea lineGap: " << static_cast<int>(hhea.lineGap) << std::endl;
+  std::cout << "Hhea advancedWidthMax: " << static_cast<int>(hhea.advancedWidthMax) << std::endl;
+  std::cout << "Hhea minLeftSideBearing: " << static_cast<int>(hhea.minLeftSideBearing) << std::endl;
+  std::cout << "Hhea minRightSideBearing: " << static_cast<int>(hhea.minRightSideBearing) << std::endl;
+  std::cout << "Hhea xMaxExtent: " << static_cast<int>(hhea.xMaxExtent) << std::endl;
+  std::cout << "Hhea caretSlopeRise: " << static_cast<int>(hhea.caretSlopeRise) << std::endl;
+  std::cout << "Hhea caretSlopeRun: " << static_cast<int>(hhea.caretSlopeRun) << std::endl;
+  std::cout << "Hhea caretOffset: " << static_cast<int>(hhea.caretOffset) << std::endl;
+    std::cout << "Hhea metricDataFormat: " << static_cast<int>(hhea.metricDataFormat) << std::endl;
+  std::cout << "Hhea numOfLongHorMetrics: " << static_cast<int>(hhea.numOfLongHorMetrics) << std::endl;
+
+
+  std::cout << "------------------------------------------------------------------" << std::endl;
+  struct HheaHeader
+{
+    int32_t  version;             // 0x00010000 (1.0)
+    int16_t  ascent;              // Distance from baseline of highest ascender
+    int16_t  descent;             // Distance from baseline of lowest descender
+    int16_t  lineGap;             // typographic line gap
+    uint16_t advancedWidthMax;    // must be consistent with horizontal metrics
+    int16_t  minLeftSideBearing;  // must be consistent with horizontal metrics
+    int16_t  minRightSideBearing; // must be consistent with horizontal metrics
+    int16_t  xMaxExtent;          // max(lsb + (xMax-xMin))
+    int16_t  caretSlopeRise;      // used to calculate the slope of the caret (rise/run) set to 1 for vertical caret
+    int16_t  caretSlopeRun;       // 0 for vertical
+    int16_t  caretOffset;         // set value to 0 for non-slanted fonts
+    int16_t  reserved;
+    int16_t  reserved2;
+    int16_t  reserved3;
+    int16_t  reserved4;
+    int16_t  metricDataFormat;    // 0 for current format
+    uint16_t numOfLongHorMetrics; // 0 for current format
+};
+}
+
+
 int main(int argc, char *argv[])
 {
   if (argc < 2)
   {
     std::cout << "Error: Wrong number of args provided." << std::endl;
-    std::cout << "Usage: ./main <path to ttf> <-h|-help|-head|-glyph <char|char decimal>|-os2>" << std::endl;
+    std::cout << "Usage: ./main <path to ttf> <-h|-help|-head|-glyph <char|char decimal>|-os2|-hhea|-vdmx>" << std::endl;
     return -1;
   }
 
@@ -91,13 +165,13 @@ int main(int argc, char *argv[])
 
     if("-h" == argument || "-help" == argument)
     {
-    std::cout << "Usage: ./main <path to ttf> <-h|-help|-head|-glyph <char|char decimal>|-os2>" << std::endl;
+    std::cout << "Usage: ./main <path to ttf> <-h|-help|-head|-glyph <char|char decimal>|-os2|-hhea|-vdmx>" << std::endl;
       return 0;
     }
     else
     {
       std::cout << "Invalid arg supplied." << std::endl;
-      std::cout << "Usage: ./main <path to ttf> <-h|-help|-head|-glyph <char|char decimal>|-os2>" << std::endl;
+      std::cout << "Usage: ./main <path to ttf> <-h|-help|-head|-glyph <char|char decimal>|-os2|-hhea|-vdmx>" << std::endl;
       return -1;
     }
   }
@@ -132,14 +206,7 @@ int main(int argc, char *argv[])
 
       try
       {
-        if(std::isdigit(args[currIdx][0]))
-        {
-          charDec = stoi(args[currIdx]);
-        }
-        else
-        {
-          charDec = (int)args[currIdx][0];
-        }
+        charDec = (int)args[currIdx][0];
       }
       catch(const std::exception& crException)
       {
@@ -153,6 +220,14 @@ int main(int argc, char *argv[])
     else if("-os2" == args[currIdx])
     {
       printOs2(font);
+    }
+    else if("-vdmx" == args[currIdx])
+    {
+      printVdmx(font);
+    }
+    else if("-hhea" == args[currIdx])
+    {
+      printHhea(font);
     }
     else
     {
