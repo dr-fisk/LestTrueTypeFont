@@ -1,14 +1,14 @@
 SHELL := /bin/bash
 
 objs = lestTtf.o endianGeneral.o cmap.o head.o glyf.o loca.o maxp.o hhea.o hmtx.o name.o post.o os2.o vdmx.o cvt.o\
-       fpgm.o gasp.o prep.o
+       fpgm.o gasp.o prep.o kern.o
 CC = g++
 
 Q=@
 
 CFLAGS = -g -O2 -std=c++17 -MMD -Wall -Werror -Wextra
 EXEC  = main
-MAINEXEC = main.c
+MAINEXEC = main.cpp
 
 ifeq ($(BUILD), D)
 	CFLAGS += -DDEBUG
@@ -38,7 +38,7 @@ StateDeps := $(patsubst %.o, %.d, $(objs))
 -include $(StateDeps)
 export
 
-%.o: %.c
+%.o: %.cpp
 	@echo "MAKE $<"
 	$(Q)$(CC) $(CFLAGS) $< $(LDFLAGS) -fPIC -c
 
@@ -49,9 +49,9 @@ help:
 	@echo "make BUILD=D"
 
 ifneq ($(TYPE), lib)
-$(EXEC): $(objs) main.c
+$(EXEC): $(objs) main.cpp
 	@echo "MAKE $@"
-	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) main.c $(objs) -o $@
+	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) main.cpp $(objs) -o $@
 else
 $(EXEC): $(objs)
 	@echo "MAKE $@"

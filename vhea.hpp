@@ -1,13 +1,13 @@
-#ifndef VMTX_HPP
-#define VMTX_HPP
+#ifndef VHEA_HPP
+#define VHEA_HPP
 
 #include "ttfTable.hpp"
 
-class Vmtx : public TrueTypeTable
+class Vhea : public TrueTypeTable
 {
   public:
-    Vmtx();
-    ~Vmtx();
+    Vhea();
+    ~Vhea();
     int8_t readTable(const std::vector<uint8_t>& crBuffer, const uint32_t cOffset, uint32_t cNumBytes=0);
   private:
 
