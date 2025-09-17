@@ -22,7 +22,12 @@ ifneq ($(TYPE), lib)
 		LDFLAGS = -lws2_32
 	endif
 else
-	ifeq ($(TARGET), win)
+	ifeq ($(TARGET), linux)
+		CC = g++
+		CFLAGS += -Wextra
+		EXEC = liblestttf.so
+		LDFLAGS = -shared -fPIC
+	else
 		CC = x86_64-w64-mingw32-g++
 		CFLAGS += -Wextra -static-libgcc -static-libstdc++
 		EXEC = lestttf.dll
