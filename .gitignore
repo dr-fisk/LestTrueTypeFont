@@ -1,9 +1,9 @@
 *.d
 *.o
-*.txt
 .vscode/
 filedump
 main
 *.exe
 numlines.sh
 *.dll
+build
